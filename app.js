@@ -5,6 +5,7 @@ import morgan from "morgan"
 import cors from "cors"
 
 import contactsRouter from "./routes/contactsRouter.js"
+import usersRoute from "./routes/usersRoute.js"
 import "./db/contctsDB.js"
 
 const app = express()
@@ -13,6 +14,7 @@ app.use(morgan("tiny"))
 app.use(cors())
 app.use(express.json())
 
+app.use("/api/auth", usersRoute)
 app.use("/api/contacts", contactsRouter)
 
 app.use((_, res) => {

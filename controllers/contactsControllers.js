@@ -2,7 +2,7 @@ import Contacts from "../modals/contact.js"
 
 import HttpError from "../helpers/HttpError.js"
 
-export const getAllContacts = async (req, res, next) => {
+ const getAllContacts = async (req, res, next) => {
   try {
     const contacts = await Contacts.find()
     res.send(contacts)
@@ -11,7 +11,7 @@ export const getAllContacts = async (req, res, next) => {
   }
 }
 
-export const getOneContact = async (req, res, next) => {
+ const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params
     const contactId = await Contacts.findById(id)
@@ -25,7 +25,7 @@ export const getOneContact = async (req, res, next) => {
   }
 }
 
-export const deleteContact = async (req, res, next) => {
+ const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params
     const contactId = await Contacts.findByIdAndDelete(id)
@@ -38,7 +38,7 @@ export const deleteContact = async (req, res, next) => {
   }
 }
 
-export const createContact = async (req, res, next) => {
+ const createContact = async (req, res, next) => {
   try {
     const ADDcontact = await Contacts.create(req.body)
 
@@ -48,7 +48,7 @@ export const createContact = async (req, res, next) => {
   }
 }
 
-export const updateContact = async (req, res, next) => {
+ const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -68,7 +68,7 @@ export const updateContact = async (req, res, next) => {
     next(HttpError)
   }
 }
-export const updateStatusContact = async (req, res) => {
+ const updateStatusContact = async (req, res) => {
   try {
     const { id } = req.params
     const updateStatusContact = await Contacts.findByIdAndUpdate(id, req.body, {
@@ -81,4 +81,12 @@ export const updateStatusContact = async (req, res) => {
   } catch (error) {
     next(HttpError)
   }
+}
+export default{
+  getAllContacts,
+  getOneContact,
+  deleteContact,
+  createContact,
+  updateContact,
+  updateStatusContact,
 }
