@@ -1,15 +1,83 @@
-import Users from "../modals/users"
+import Users from "../modals/users.js"
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 async function registrarion(req, res, next) {
-  const { name, email, password } = req.body
+  const { email, password } = req.body
+
   try {
-    const registrated = Users.create({ name, email, password })
-    console.log(registrated)
-    res.send("")
+    const userExist = await Users.findOne({ email })
+
+    if (userExist !== null) {
+      return res.status(409).send({ massage: "Email in use" })
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10)
+
+    await Users.create({ email, password: passwordHash })
+    res.status(201).send({ user: { email, subscription: "starter" } })
   } catch (error) {
     next(error)
   }
 }
+async function login(req, res, next) {
+  const { email, password } = req.body
+  try {
+    const user = await Users.findOne({ email })
+    if (email === null) {
+      return res.status(401).send({ massage: "Email or password is wrong" })
+    }
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (isMatch === false) {
+      return res.status(401).send({ message: "Email or password is incorrect" })
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    })
+    await Users.findByIdAndUpdate(user._id, { token })
+
+    res.status(200).send({
+      token,
+      user: {
+        email,
+        subscription: "starter",
+      },
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function logout(req, res, next) {
+  try {
+    await Users.findByIdAndUpdate(req.user.id, { token: null })
+
+    res.status(204).end()
+  } catch (error) {
+    next(error)
+  }
+}
+export const current = async (req, res, next) => {
+  try {
+    const userId = req.user.id
+
+    const user = await Users.findById(userId)
+
+    if (user === null) {
+      return res.status(401).send({ message: "Not authorized" })
+    }
+    const result = { email: user.email, subscription: user.subscription }
+    return res.status(200).send(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export default {
   registrarion,
+  login,
+  logout,
+  current,
 }

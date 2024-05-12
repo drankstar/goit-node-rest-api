@@ -2,19 +2,19 @@ import Contacts from "../modals/contact.js"
 
 import HttpError from "../helpers/HttpError.js"
 
- const getAllContacts = async (req, res, next) => {
+const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await Contacts.find()
+    const contacts = await Contacts.find({ owner: req.user.id })
     res.send(contacts)
   } catch (error) {
     next(error)
   }
 }
 
- const getOneContact = async (req, res, next) => {
+const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params
-    const contactId = await Contacts.findById(id)
+    const contactId = await Contacts.fi({ _id: id, owner: req.user.id })
 
     if (contactId === null) {
       next(HttpError(404))
@@ -25,10 +25,13 @@ import HttpError from "../helpers/HttpError.js"
   }
 }
 
- const deleteContact = async (req, res, next) => {
+const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params
-    const contactId = await Contacts.findByIdAndDelete(id)
+    const contactId = await Contacts.findByIdAndDelete({
+      _id: id,
+      owner: req.user.id,
+    })
     if (contactId === null) {
       next(HttpError(404))
     }
@@ -38,9 +41,14 @@ import HttpError from "../helpers/HttpError.js"
   }
 }
 
- const createContact = async (req, res, next) => {
+const createContact = async (req, res, next) => {
+  const contact = {
+    ...req.body,
+    owner: req.user.id,
+  }
+
   try {
-    const ADDcontact = await Contacts.create(req.body)
+    const ADDcontact = await Contacts.create(contact)
 
     await res.send(ADDcontact)
   } catch (error) {
@@ -48,15 +56,19 @@ import HttpError from "../helpers/HttpError.js"
   }
 }
 
- const updateContact = async (req, res, next) => {
+const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params
+    const contact = {
+      ...req.body,
+      owner: req.user.id,
+    }
 
     if (!req.body.name && !req.body.email && !req.body.phone) {
       next(HttpError(400, "Body must have at least one field"))
     }
 
-    const updateContact = await Contacts.findByIdAndUpdate(id, req.body, {
+    const updateContact = await Contacts.findByIdAndUpdate(id, contact, {
       new: true,
     })
 
@@ -68,7 +80,7 @@ import HttpError from "../helpers/HttpError.js"
     next(HttpError)
   }
 }
- const updateStatusContact = async (req, res) => {
+const updateStatusContact = async (req, res) => {
   try {
     const { id } = req.params
     const updateStatusContact = await Contacts.findByIdAndUpdate(id, req.body, {
@@ -82,7 +94,7 @@ import HttpError from "../helpers/HttpError.js"
     next(HttpError)
   }
 }
-export default{
+export default {
   getAllContacts,
   getOneContact,
   deleteContact,
