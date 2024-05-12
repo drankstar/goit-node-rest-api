@@ -61,15 +61,13 @@ async function logout(req, res, next) {
 }
 export const current = async (req, res, next) => {
   try {
-    const userId = req.user.id
-
-    const user = await Users.findById(userId)
+    const user = await Users.findById(req.user.id)
 
     if (user === null) {
       return res.status(401).send({ message: "Not authorized" })
     }
-    const result = { email: user.email, subscription: user.subscription }
-    return res.status(200).send(result)
+    const currentUser = { email: user.email, subscription: user.subscription }
+    return res.status(200).send(currentUser)
   } catch (error) {
     next(error)
   }
