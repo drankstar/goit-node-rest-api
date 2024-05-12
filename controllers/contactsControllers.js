@@ -78,7 +78,7 @@ export const updateStatusContact = async (req, res) => {
       next(HttpError(404))
     }
     res.send(updateStatusContact)
-  } catch (erro) {
+  } catch (error) {
     next(HttpError)
   }
 }
