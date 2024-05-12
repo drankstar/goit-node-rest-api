@@ -14,7 +14,7 @@ const getAllContacts = async (req, res, next) => {
 const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params
-    const contactId = await Contacts.fi({ _id: id, owner: req.user.id })
+    const contactId = await Contacts.findOne({ _id: id, owner: req.user.id })
 
     if (contactId === null) {
       next(HttpError(404))
@@ -28,7 +28,7 @@ const getOneContact = async (req, res, next) => {
 const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params
-    const contactId = await Contacts.findByIdAndDelete({
+    const contactId = await Contacts.findOneAndDelete({
       _id: id,
       owner: req.user.id,
     })
@@ -68,7 +68,7 @@ const updateContact = async (req, res, next) => {
       next(HttpError(400, "Body must have at least one field"))
     }
 
-    const updateContact = await Contacts.findByIdAndUpdate(id, contact, {
+    const updateContact = await Contacts.findOneAndUpdate(id, contact, {
       new: true,
     })
 
