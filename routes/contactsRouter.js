@@ -1,12 +1,5 @@
 import express from "express"
-import {
-  getAllContacts,
-  getOneContact,
-  deleteContact,
-  createContact,
-  updateContact,
-  updateStatusContact,
-} from "../controllers/contactsControllers.js"
+import contactsController from "../controllers/contactsControllers.js"
 import validateBody from "../helpers/validateBody.js"
 import {
   createContactSchema,
@@ -17,29 +10,29 @@ import {
 const contactsRouter = express.Router()
 const jsonParcer = express.json()
 
-contactsRouter.get("/", getAllContacts)
+contactsRouter.get("/", contactsController.getAllContacts)
 
-contactsRouter.get("/:id", getOneContact)
+contactsRouter.get("/:id", contactsController.getOneContact)
 
-contactsRouter.delete("/:id", deleteContact)
+contactsRouter.delete("/:id", contactsController.deleteContact)
 
 contactsRouter.post(
   "/",
   jsonParcer,
   validateBody(createContactSchema),
-  createContact
+  contactsController.createContact
 )
 
 contactsRouter.put(
   "/:id",
   jsonParcer,
   validateBody(updateContactSchema),
-  updateContact
+  contactsController.updateContact
 )
 contactsRouter.patch(
   "/:id/favorite",
   validateBody(updateFavorite),
-  updateStatusContact
+  contactsController.updateStatusContact
 )
 
 export default contactsRouter
