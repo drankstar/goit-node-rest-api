@@ -20,7 +20,7 @@ const getOneContact = async (req, res, next) => {
       next(HttpError(404))
     }
     res.send(contactId)
-  } catch (erro) {
+  } catch (error) {
     next(HttpError)
   }
 }
