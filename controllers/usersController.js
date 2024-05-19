@@ -20,10 +20,8 @@ async function registrarion(req, res, next) {
 
     const avatarURL = gravatar.url(email)
 
-    await Users.create({ email, password: passwordHash })
-    res
-      .status(201)
-      .send({ user: { email, subscription: "starter", avatarURL } })
+    await Users.create({ email, password: passwordHash, avatarURL })
+    res.status(201).send({ user: { email, subscription: "starter" } })
   } catch (error) {
     next(error)
   }
