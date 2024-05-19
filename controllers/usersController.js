@@ -18,7 +18,7 @@ async function registrarion(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10)
 
-    const avatarURL = gravata.url(email)
+    const avatarURL = gravatar.url(email)
 
     await Users.create({ email, password: passwordHash, avatarURL })
     res.status(201).send({ user: { email, subscription: "starter" } })
