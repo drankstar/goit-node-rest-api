@@ -4,6 +4,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import * as fs from "node:fs/promises"
 import path from "node:path"
+import gravatar from "gravatar"
 
 async function registrarion(req, res, next) {
   const { email, password } = req.body
@@ -17,8 +18,12 @@ async function registrarion(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10)
 
+    const avatarURL = gravatar.url(email)
+
     await Users.create({ email, password: passwordHash })
-    res.status(201).send({ user: { email, subscription: "starter" } })
+    res
+      .status(201)
+      .send({ user: { email, subscription: "starter", avatarURL } })
   } catch (error) {
     next(error)
   }
