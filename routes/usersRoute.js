@@ -31,5 +31,7 @@ usersRoute.patch(
   upload.single("avatars"),
   usersController.updateAvatar
 )
+usersRoute.get("/verify/:verificationToken", usersController.verify)
+usersRoute.post("/verify", usersController.resendVerification)
 
 export default usersRoute

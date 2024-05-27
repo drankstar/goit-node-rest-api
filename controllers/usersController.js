@@ -1,3 +1,4 @@
+import crypto from "node:crypto"
 import Jimp from "jimp"
 import Users from "../modals/users.js"
 import bcrypt from "bcrypt"
@@ -5,6 +6,7 @@ import jwt from "jsonwebtoken"
 import * as fs from "node:fs/promises"
 import path from "node:path"
 import gravatar from "gravatar"
+import verificationEmail from "../helpers/mailSand.js"
 
 async function registrarion(req, res, next) {
   const { email, password } = req.body
@@ -17,10 +19,19 @@ async function registrarion(req, res, next) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-
     const avatarURL = gravatar.url(email)
 
-    await Users.create({ email, password: passwordHash, avatarURL })
+    const verificationToken = crypto.randomUUID()
+
+    await Users.create({
+      email,
+      password: passwordHash,
+      avatarURL,
+      verificationToken,
+    })
+
+    await verificationEmail(email, verificationToken)
+
     res.status(201).send({ user: { email, subscription: "starter" } })
   } catch (error) {
     next(error)
@@ -37,6 +48,10 @@ async function login(req, res, next) {
 
     if (isMatch === false) {
       return res.status(401).send({ message: "Email or password is incorrect" })
+    }
+
+    if (user.verify === false) {
+      return res.status(401).send({ message: "Please verify your email" })
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -104,10 +119,57 @@ async function updateAvatar(req, res, next) {
     next(error)
   }
 }
+async function verify(req, res, next) {
+  const { verificationToken } = req.params
+  try {
+    const user = await Users.findOneAndUpdate(
+      { verificationToken },
+      { verify: true, verificationToken: null },
+      { new: true }
+    )
+
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" })
+    }
+
+    res.status(200).send({ message: "Verification successful" })
+  } catch (error) {
+    next(error)
+  }
+}
+const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.body
+
+    if (!email) {
+      return res.status(400).send({ message: "missing required field email" })
+    }
+
+    const user = await Users.findOne({ email })
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" })
+    }
+
+    if (user.verify === true) {
+      return res
+        .status(400)
+        .send({ message: "Verification has already been passed" })
+    }
+    await verificationEmail(user.email, user.verificationToken)
+
+    res.status(200).send({ message: "Verification email sent" })
+  } catch (error) {
+    next(error)
+  }
+}
+
 export default {
   registrarion,
   login,
   logout,
   current,
   updateAvatar,
+  verify,
+  resendVerification,
 }
