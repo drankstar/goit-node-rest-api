@@ -26,7 +26,7 @@ async function registrarion(req, res, next) {
     next(error)
   }
 }
-async function login(req, res, next) {
+async function logi(req, res, next) {
   const { email, password } = req.body
   try {
     const user = await Users.findOne({ email })
