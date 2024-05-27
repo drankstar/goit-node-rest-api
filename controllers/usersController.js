@@ -1,6 +1,10 @@
+import Jimp from "jimp"
 import Users from "../modals/users.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import * as fs from "node:fs/promises"
+import path from "node:path"
+import gravatar from "gravatar"
 
 async function registrarion(req, res, next) {
   const { email, password } = req.body
@@ -14,7 +18,9 @@ async function registrarion(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10)
 
-    await Users.create({ email, password: passwordHash })
+    const avatarURL = gravatar.url(email)
+
+    await Users.create({ email, password: passwordHash, avatarURL })
     res.status(201).send({ user: { email, subscription: "starter" } })
   } catch (error) {
     next(error)
@@ -59,7 +65,7 @@ async function logout(req, res, next) {
     next(error)
   }
 }
-export const current = async (req, res, next) => {
+const current = async (req, res, next) => {
   try {
     const user = await Users.findById(req.user.id)
 
@@ -72,10 +78,36 @@ export const current = async (req, res, next) => {
     next(error)
   }
 }
+async function updateAvatar(req, res, next) {
+  try {
+    const { path: filePath, filename } = req.file
 
+    const newPath = path.resolve("public/avatars", filename)
+
+    const img = await Jimp.read(filePath)
+    img.resize(250, 250).write(filePath)
+
+    await fs.rename(filePath, newPath)
+
+    const user = await Users.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: `/avatars/${filename}` },
+      { new: true }
+    )
+
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" })
+    }
+
+    res.send(user)
+  } catch (error) {
+    next(error)
+  }
+}
 export default {
   registrarion,
   login,
   logout,
   current,
+  updateAvatar,
 }

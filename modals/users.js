@@ -19,5 +19,9 @@ const usersShema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  avatarURL: {
+    type: String,
+    default: null,
+  },
 })
 export default mongoose.model("Users", usersShema)

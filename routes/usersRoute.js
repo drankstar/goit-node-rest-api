@@ -4,6 +4,7 @@ import validateBody from "../helpers/validateBody.js"
 import { registerUserSchema } from "../schemas/userSchema"
 import { loginSchema } from "../schemas/userSchema"
 import authToken from "../middleware/authToken.js"
+import upload from "../middleware/upload.js"
 
 const usersRoute = express.Router()
 
@@ -24,5 +25,11 @@ usersRoute.post(
 usersRoute.post("/logout", authToken, usersController.logout)
 
 usersRoute.get("/current", authToken, usersController.current)
+usersRoute.patch(
+  "/avatars",
+  authToken,
+  upload.single("avatars"),
+  usersController.updateAvatar
+)
 
 export default usersRoute
